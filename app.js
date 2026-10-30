@@ -26,7 +26,7 @@ function isDue(t){const r=t.repeat||{type:'none'},today=dateLocal();if(!r.type||
 function eligible(t){return t.status==='active'&&t.contexts?.includes(currentContext())&&(!t.start||t.start<=dateLocal())&&isDue(t)&&!state.skip[t.id]&&(!timeLimit||Number(t.duration)<=timeLimit)}
 function isUrgent(t){return t.urgentDate===dateLocal()}
 function score(t){return (isUrgent(t)?10000:0)+(priorityRank[t.priority]||2)*1000-(Number.isFinite(t.order)?t.order:state.tasks.indexOf(t))/10000}
-function sortedEligible(){const list=state.tasks.filter(eligible);const regular=list.filter(t=>t.kind!=='project');return (regular.length?regular:list).sort((a,b)=>score(b)-score(a)||a.created.localeCompare(b.created))}
+function sortedEligible(){const list=state.tasks.filter(eligible);const byScore=(a,b)=>score(b)-score(a)||a.created.localeCompare(b.created);const regular=list.filter(t=>t.kind!=='project').sort(byScore);const projects=list.filter(t=>t.kind==='project').sort(byScore);return regular.concat(projects)}
 let timeLimit=0,focusIndex=0;
 function updateNav(){$('inboxCount').textContent=state.tasks.filter(t=>t.status==='inbox').length||'';document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('selected',b.dataset.page===page));$('pageTitle').textContent={focus:'Vad gör vi nu?',inbox:'Inkorg',tasks:'Överblick',schedule:'Veckoschema'}[page]}
 function render(){if(state.manual&&state.manual.until<=Date.now()){state.manual=null;save()}cleanSession();updateNav();({focus:renderFocus,inbox:renderInbox,tasks:renderTasks,schedule:renderSchedule})[page]();}
